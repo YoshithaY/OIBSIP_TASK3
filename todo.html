@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDo App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #d7b2c9;
+            margin: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .add-task-box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 40%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #b04d8a;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px;
+            margin: 10px;
+            cursor: pointer;
+            background-color: #b04d8a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #b04d8a;
+        }
+
+        .task-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .task {
+            width: 30%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .completed {
+            color: #808080;
+        }
+
+        h2 {
+            margin-top: 30px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>To-Do App</h1>
+
+    <div class="add-task-box">
+        <input type="text" id="titleInput" placeholder="Task Title...">
+        <input type="text" id="descriptionInput" placeholder="Task Description...">
+        <button onclick="addTask()">Add Task</button>
+    </div>
+
+    <h2>Pending Tasks</h2>
+    <ul id="pendingTasks" class="task-list"></ul>
+
+    <h2>Completed Tasks</h2>
+    <ul id="completedTasks" class="task-list"></ul>
+
+    <script>
+        function addTask() {
+            const titleInput = document.getElementById("titleInput");
+            const descriptionInput = document.getElementById("descriptionInput");
+
+            const title = titleInput.value.trim();
+            const description = descriptionInput.value.trim();
+
+            if (title === "" || description === "") {
+                alert("Please enter both title and description for the task");
+                return;
+            }
+
+            const task = {
+                title,
+                description,
+                completed: false,
+                dateAdded: new Date().toLocaleString(),
+                dateCompleted: null
+            };
+
+            const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+            tasks.push(task);
+
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+
+            titleInput.value = "";
+            descriptionInput.value = "";
+
+            updateTaskLists();
+        }
+
+        function updateTaskLists() {
+            const pendingTasksList = document.getElementById("pendingTasks");
+            const completedTasksList = document.getElementById("completedTasks");
+
+            pendingTasksList.innerHTML = "";
+            completedTasksList.innerHTML = "";
+
+            const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+            tasks.forEach(task => {
+                const listItem = document.createElement("li");
+                listItem.className = "task";
+
+                if (task.completed) {
+                    listItem.classList.add("completed");
+                }
+
+                const titleElement = document.createElement("h3");
+                titleElement.textContent = task.title;
+
+                const descriptionElement = document.createElement("p");
+                descriptionElement.textContent = task.description;
+
+                const taskDetails = document.createTextNode(`Added: ${task.dateAdded}`);
+
+                listItem.appendChild(titleElement);
+                listItem.appendChild(descriptionElement);
+                listItem.appendChild(taskDetails);
+
+                if (!task.completed) {
+                    const completeButton = document.createElement("button");
+                    completeButton.textContent = "Complete";
+                    completeButton.onclick = function() {
+                        completeTask(tasks.indexOf(task));
+                    };
+                    listItem.appendChild(completeButton);
+                }
+
+                const deleteButton = document.createElement("button");
+                deleteButton.textContent = "Delete";
+                deleteButton.onclick = function() {
+                    deleteTask(tasks.indexOf(task));
+                };
+                listItem.appendChild(deleteButton);
+
+                if (task.completed) {
+                    completedTasksList.appendChild(listItem);
+                } else {
+                    pendingTasksList.appendChild(listItem);
+                }
+            });
+        }
+
+        function completeTask(index) {
+            const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+            tasks[index].completed = true;
+            tasks[index].dateCompleted = new Date().toLocaleString();
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+            updateTaskLists();
+        }
+
+        function deleteTask(index) {
+            const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+            tasks.splice(index, 1);
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+            updateTaskLists();
+        }
+
+        updateTaskLists();
+    </script>
+
+</body>
+</html>
